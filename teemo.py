@@ -4,10 +4,11 @@ import json
 import pandas as pd
 import pprint 
 import mysql.connector
+from mysql.connector import errorcode
 
 pp = pprint.PrettyPrinter(indent=4)
 
-region = 'na1'
+region = "na1"
 api_key = "RGAPI-431127f0-c159-4c5d-865a-9cb61e9bb07e"
 
 class summoner:
@@ -20,21 +21,17 @@ class summoner:
         
     def get_SummonerDTO(self):
         '''
-        SummonerDTO - represents a summoner
+        SummonerDTO
+            represents a summoner\n
+        
         Add
-            accountId	string	Encrypted account ID. Max length 56 characters.
-            
-            profileIconId	int	ID of the summoner icon associated with the summoner.
-            
-            revisionDate	long	Date summoner was last modified specified as epoch milliseconds. The following events will update this timestamp: summoner name change, summoner level change, or profile icon change.
-            
-            name	string	Summoner name.
-            
-            id	string	Encrypted summoner ID. Max length 63 characters.
-            
-            puuid	string	Encrypted PUUID. Exact length of 78 characters.
-            
-            summonerLevel	long	Summoner level associated with the summoner.
+            accountId	string	Encrypted account ID. Max length 56 characters.\n
+            profileIconId	int	ID of the summoner icon associated with the summoner.\n
+            revisionDate	long	Date summoner was last modified specified as epoch milliseconds. The following events will update this timestamp: summoner name change, summoner level change, or profile icon change.\n
+            name	string	Summoner name.\n
+            id	string	Encrypted summoner ID. Max length 63 characters.\n
+            puuid	string	Encrypted PUUID. Exact length of 78 characters.\n
+            summonerLevel	long	Summoner level associated with the summoner.\n
         '''
         
         api_url = (
@@ -121,8 +118,113 @@ def get_match_info(match_id):
     return MatchDto
          
 
+def DB_init():
+    DB_NAME = 'teemo'
 
+    TABLES = {}
+    TABLES['tft_summoner'] = (
+        "CREATE TABLE `tft_summoner` ("
+        "  `puuid` varchar(100) NOT NULL ,"
+        "  `name` varchar(100) NOT NULL ,"
+        "  `accountId` varchar(100) NOT NULL,"
+        "  `profileIconId` varchar(100) NOT NULL,"
+        "  `revisionDate` varchar(100) NOT NULL,"
+        "  `id` varchar(100) NOT NULL,"
+        "  `summonerLevel` varchar(100) NOT NULL,"
+        "  `rank` varchar(100) NOT NULL"
+        ") ENGINE=InnoDB")
+
+    mydb = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="tujiaqi321756623",
+    database="teemo"
+    )
+    
+    cursor = mydb.cursor()
+    cursor.execute("DROP TABLE IF EXISTS tft_summoner")
+    
+    try:
+        cursor.execute("USE {}".format(DB_NAME))
+    except mysql.connector.Error as err:
+        print("Database {} does not exists.".format(DB_NAME))
+        if err.errno == errorcode.ER_BAD_DB_ERROR:
+            create_database(cursor,DB_NAME)
+            print("Database {} created successfully.".format(DB_NAME))
+            mydb.database = DB_NAME
+        else:
+            print(err)
+            exit(1)
+
+    for table_name in TABLES:
+        table_description = TABLES[table_name]
+        try:
+            print("Creating table {}: ".format(table_name), end='')
+            cursor.execute(table_description)
+        except mysql.connector.Error as err:
+            if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
+                print("already exists.")
+            else:
+                print(err.msg)
+        else:
+            print("OK")
+
+    cursor.close()
+    mydb.close()
+    
+def create_database(cursor,DB_NAME):
+    try:
+        cursor.execute(
+            "CREATE DATABASE {} DEFAULT CHARACTER SET 'utf8'".format(DB_NAME))
+    except mysql.connector.Error as err:
+        print("Failed creating database: {}".format(err))
+        exit(1)
+
+def insert_data(summoner):
+    cnx = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="tujiaqi321756623",
+        database="teemo"
+        )
+        
+    cursor = cnx.cursor()
+    
+    add_summoner = ("INSERT INTO tft_summoner "
+                    "(puuid,name,accountId,profileIconId,revisionDate,id,summonerLevel,`rank`) "
+                    "VALUES (%s,%s,%s,%s,%s,%s,%s,%s)")
+    
+    data_summoner = (
+        summoner.puuid,
+        summoner.name,
+        summoner.accountId,
+        summoner.profileIconId,
+        summoner.revisionDate,
+        summoner.id,
+        summoner.summonerLevel,
+        summoner.rank)
+    print(type(summoner.puuid),'|',summoner.puuid)
+    
+    try:
+        
+        cursor.execute(add_summoner, data_summoner)
+    except mysql.connector.Error as err:
+        print("Insert failed")
+        print(err.msg)
+    else:
+        print("Insert data successfully")
+    
+    cnx.commit()
+
+    cursor.close()
+    cnx.close()
+    
+    
+    
 if __name__ == "__main__":
+
+    DB_init()
+    
     # teemo is the searhced summoner
     teemo = summoner('a cute poro snax')
     
@@ -133,6 +235,7 @@ if __name__ == "__main__":
         match_participants = get_match_info(match_id)['info']['participants']
         
         for match_participant in match_participants:
+            
             # get puuid to pull the data later
             player_puuid = match_participant['puuid']
             if player_puuid == teemo.puuid:
@@ -140,6 +243,10 @@ if __name__ == "__main__":
                 break
         
         break
+    
+    insert_data(teemo)
+    
+    print(teemo.__dir__())
         
     
 
