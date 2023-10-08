@@ -5,11 +5,12 @@ import pandas as pd
 import pprint 
 import mysql.connector
 from mysql.connector import errorcode
+from datetime import datetime
 
 pp = pprint.PrettyPrinter(indent=4)
 
 region = "na1"
-api_key = "RGAPI-431127f0-c159-4c5d-865a-9cb61e9bb07e"
+api_key = "RGAPI-97577450-d364-4e9c-9e5c-b47c1686fbe5"
 
 class summoner:
     def __init__(self,name):
@@ -44,13 +45,20 @@ class summoner:
         )
         resp = requests.get(api_url)
         SummonerDTO = resp.json()
+        print('SummonerDTO is ---------------')
         pp.pprint(SummonerDTO)
+        
+        # convert the Unix timestamp into datetime
+        SummonerDTO['revisionDate'] = datetime.utcfromtimestamp(SummonerDTO['revisionDate']/1000).strftime('%Y-%m-%d %H:%M:%S')
+        self.summonerDTO = SummonerDTO
+        
         self.accountId = SummonerDTO['accountId']
         self.profileIconId = SummonerDTO['profileIconId']
         self.revisionDate = SummonerDTO['revisionDate']
         self.id = SummonerDTO['id']
         self.puuid = SummonerDTO['puuid']
         self.summonerLevel = SummonerDTO['summonerLevel']
+        
         
     
     def get_tft_legend(self):
@@ -79,12 +87,9 @@ class summoner:
             key = legend['queueType']
             legend_dict[key] = legend
             
-            if key == 'RANKED_TFT':
-                self.rank = legend['tier'] + ' ' + legend['rank'] + ' ' + str(legend['leaguePoints'])
-        
-        print(self.rank)
         self.rank_info = legend_dict['RANKED_TFT']
         print(self.rank_info)
+    
     
     def get_tft_matches(self):
         '''
@@ -122,18 +127,48 @@ def DB_init():
     DB_NAME = 'teemo'
 
     TABLES = {}
-    TABLES['tft_summoner'] = (
-        "CREATE TABLE `tft_summoner` ("
-        "  `puuid` varchar(100) NOT NULL ,"
-        "  `name` varchar(100) NOT NULL ,"
-        "  `accountId` varchar(100) NOT NULL,"
-        "  `profileIconId` varchar(100) NOT NULL,"
-        "  `revisionDate` varchar(100) NOT NULL,"
-        "  `id` varchar(100) NOT NULL,"
-        "  `summonerLevel` varchar(100) NOT NULL,"
-        "  `rank` varchar(100) NOT NULL"
+    TABLES['SummonerDTO'] = (
+        "CREATE TABLE `SummonerDTO` ("
+        "  `accountId` varchar(100) NOT NULL ,"
+        "  `id` varchar(100) NOT NULL ,"
+        "  `name` varchar(100) NOT NULL,"
+        "  `profileIconId` int NOT NULL,"
+        "  `puuid` varchar(100) NOT NULL,"
+        "  `revisionDate` date NOT NULL,"
+        "  `summonerLevel` int NOT NULL"
         ") ENGINE=InnoDB")
+    
+    TABLES['RANKED_TFT'] = (
+        "CREATE TABLE `RANKED_TFT` ("
+        "  `puuid` varchar(100) NOT NULL,"
+        "  `summonerId` varchar(100) NOT NULL,"
+        "  `summonerName` varchar(100) NOT NULL,"
+        "  `tier` varchar(100) NOT NULL,"
+        "  `rank` varchar(100) NOT NULL,"
+        "  `leagueId` varchar(100) NOT NULL,"
+        "  `freshBlood` boolean NOT NULL ,"
+        "  `hotStreak` boolean NOT NULL ,"
+        "  `inactive` boolean NOT NULL,"
+        "  `leaguePoints` int NOT NULL,"
+        "  `losses` int NOT NULL,"
+        "  `queueType` varchar(100) NOT NULL,"
+        "  `veteran` boolean NOT NULL,"
+        "  `wins` int NOT NULL"
+        ") ENGINE=InnoDB")
+    
+    # TABLES['MatchDTO'] = (
+    #     "CREATE TABLE `RANKED_TFT` ("
+    #     "  `game_datetime` date NOT NULL,"
+    #     "  `game_length` varchar(100) NOT NULL,"
+    #     "  `game_variation` varchar(100) NOT NULL,"
+    #     "  `game_version` varchar(100) NOT NULL,"
+    #     "  `participantDTO_id` varchar(100) NOT NULL,"
+    #     "  `queue_id` varchar(100) NOT NULL,"
+    #     "  `tft_set_number` boolean NOT NULL ,"
+    #     ") ENGINE=InnoDB")
+    
 
+    
     mydb = mysql.connector.connect(
     host="localhost",
     user="root",
@@ -142,7 +177,8 @@ def DB_init():
     )
     
     cursor = mydb.cursor()
-    cursor.execute("DROP TABLE IF EXISTS tft_summoner")
+    cursor.execute("DROP TABLE IF EXISTS SummonerDTO")
+    cursor.execute("DROP TABLE IF EXISTS RANKED_TFT")
     
     try:
         cursor.execute("USE {}".format(DB_NAME))
@@ -190,32 +226,41 @@ def insert_data(summoner):
         
     cursor = cnx.cursor()
     
-    add_summoner = ("INSERT INTO tft_summoner "
-                    "(puuid,name,accountId,profileIconId,revisionDate,id,summonerLevel,`rank`) "
-                    "VALUES (%s,%s,%s,%s,%s,%s,%s,%s)")
+    # --------------------------------------------------------------------- insert data into SummonerDTO -------------------------------------------------------------------------
+    add_summoner = ("INSERT INTO SummonerDTO "
+                    "(accountId, id, name, profileIconId, puuid, revisionDate, summonerLevel)"
+                    "VALUES (%(accountId)s,%(id)s,%(name)s,%(profileIconId)s,%(puuid)s,%(revisionDate)s,%(summonerLevel)s)")
     
-    data_summoner = (
-        summoner.puuid,
-        summoner.name,
-        summoner.accountId,
-        summoner.profileIconId,
-        summoner.revisionDate,
-        summoner.id,
-        summoner.summonerLevel,
-        summoner.rank)
-    print(type(summoner.puuid),'|',summoner.puuid)
+    data_summoner = summoner.summonerDTO
+    
     
     try:
-        
         cursor.execute(add_summoner, data_summoner)
     except mysql.connector.Error as err:
         print("Insert failed")
         print(err.msg)
     else:
-        print("Insert data successfully")
+        print("Insert data into SummonerDTO table successfully")
     
-    cnx.commit()
+    # --------------------------------------------------------------------- insert data into RANKED_TFT -------------------------------------------------------------------------
+    add_rank = ("INSERT INTO RANKED_TFT "
+                "(`puuid`, `summonerId`, `summonerName`, `tier`, `rank`, `leagueId`, `freshBlood`, `hotStreak`, `inactive`, `leaguePoints`, `losses`, `queueType`, `veteran`, `wins`) "
+                "VALUES (%(puuid)s, %(summonerId)s, %(summonerName)s, %(tier)s, %(rank)s, %(leagueId)s, %(freshBlood)s, %(hotStreak)s, %(inactive)s, %(leaguePoints)s, %(losses)s, %(queueType)s, %(veteran)s, %(wins)s)")
 
+    data_rank = summoner.rank_info
+    
+    try:
+        cursor.execute(add_rank, data_rank)
+    except mysql.connector.Error as err:
+        print("Insert failed")
+        print(err.msg)
+    else:
+        print("Insert data into RANKED_TFT successfully")
+    
+    
+        
+        
+    cnx.commit()
     cursor.close()
     cnx.close()
     
@@ -226,7 +271,7 @@ if __name__ == "__main__":
     DB_init()
     
     # teemo is the searhced summoner
-    teemo = summoner('a cute poro snax')
+    teemo = summoner("a cute poro snax")
     
     matche_ids = teemo.match_ids
     
