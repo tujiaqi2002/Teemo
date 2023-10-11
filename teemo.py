@@ -10,7 +10,7 @@ from datetime import datetime
 pp = pprint.PrettyPrinter(indent=4)
 
 region = "na1"
-api_key = "RGAPI-97577450-d364-4e9c-9e5c-b47c1686fbe5"
+api_key = "RGAPI-67bfc2df-e9cb-48dc-ba2a-2cc4959939c1"
 
 class summoner:
     def __init__(self,name):
@@ -271,7 +271,7 @@ if __name__ == "__main__":
     DB_init()
     
     # teemo is the searhced summoner
-    teemo = summoner("a cute poro snax")
+    teemo = summoner("kissing u")
     
     matche_ids = teemo.match_ids
     
