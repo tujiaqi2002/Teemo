@@ -8,7 +8,7 @@ const searchSummonerInput = document.getElementById('input-search-summoner');
 const searchSummonerButton = document.getElementById('button-search-summoner');
 
 region = 'na1';
-api_key = 'RGAPI-67bfc2df-e9cb-48dc-ba2a-2cc4959939c1';
+api_key = 'RGAPI-ae97994b-3170-4889-bcfa-18e8e84a6b4f';
 
 async function searchSummoner(summonerName) {
   await getSummonerDTO(summonerName);
@@ -34,6 +34,7 @@ async function getSummonerDTO(summonerName) {
   const puuid = summoner.querySelector('[summonerDTO-puuid]');
   const summonerLevel = summoner.querySelector('[summonerDTO-summonerLevel]');
 
+  
   accountId.textContent = summonerDTO.accountId;
   profileIconId.textContent = summonerDTO.profileIconId;
   revisionDate.textContent =
