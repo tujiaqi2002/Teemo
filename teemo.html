@@ -20,6 +20,7 @@
 
     <div class="search-summonerDTO-container" search-summonerDTO-container></div>
     <div class="search-legends-container" search-legends-container></div>
+    <div class="search-matchups-container" search-matches-container></div>
 
     <template summoner-summonerDTO-template>
       <div class="summonerDTO">
@@ -51,6 +52,26 @@
         <div class="wins" legend-wins></div>
       </div>
     </template>
+
+    <template summoner-matchup-template>
+      <div class="matchup">
+        <div class="icon-section">
+          <div class="icon"></div>
+          <div class="level"></div>
+        </div>
+        <div class="game-info-section">
+          <div class="queue-type"></div>
+          <div class="game-length"></div>
+          <div class="game-date"></div>
+        </div>
+        <div class="ingame-info-section">
+          <div class="augment-section"></div>
+          <div class="units-traits-section">
+            <div class="units"></div>
+            <div class="traits"></div>
+          </div>
+        </div>
+      </div>
+    </template>
   </body>
 </html>
-
