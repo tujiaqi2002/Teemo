@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tu</title>
     <link type="text/css" rel="stylesheet" href="teemo.css" />
+    <link type="text/css" rel="stylesheet" href="profileIcon.css" />
+
     <script src="teemo.js" defer></script>
   </head>
 
@@ -24,32 +26,21 @@
 
     <template summoner-summonerDTO-template>
       <div class="summonerDTO">
-        <div class="accountId" summonerDTO-accountId></div>
         <div class="profileIconId" summonerDTO-profileIconId></div>
-        <div class="revisionDate" summonerDTO-revisionDate></div>
         <div class="name" summonerDTO-name></div>
-        <div class="id" summonerDTO-id></div>
-        <div class="puuid" summonerDTO-puuid></div>
-        <div class="summonerLevel" summonerDTO-summonerLevel></div>
       </div>
     </template>
 
     <template summoner-legend-template>
       <div class="legend">
-        <div class="freshBlood" legend-freshBlood></div>
-        <div class="hotStreak" legend-hotStreak></div>
-        <div class="inactive" legend-inactive></div>
-        <div class="leagueId" legend-leagueId></div>
-        <div class="leaguePoints" legend-leaguePoints></div>
-        <div class="losses" legend-losses></div>
-        <div class="puuid" legend-puuid></div>
+        <div class="tier-section">
+          <div class="tier" legend-tier></div>
+          <div class="leaguePoints" legend-leaguePoints></div>
+        </div>
+
         <div class="queueType" legend-queueType></div>
-        <div class="rank" legend-rank></div>
-        <div class="summonerId" legend-summonerId></div>
-        <div class="summonerName" legend-summonerName></div>
-        <div class="tier" legend-tier></div>
-        <div class="veteran" legend-veteran></div>
-        <div class="wins" legend-wins></div>
+        <div class="stats" legend-stats></div>
+        <div class="winrate" legend-winrate></div>
       </div>
     </template>
 
@@ -60,14 +51,16 @@
           <div class="level"></div>
         </div>
         <div class="game-info-section">
-          <div class="queue-type"></div>
-          <div class="game-length"></div>
+          <div class="placement"></div>
+          <div class="queue-type-game-length"></div>
           <div class="game-date"></div>
         </div>
         <div class="ingame-info-section">
           <div class="augment-section"></div>
           <div class="units-traits-section">
-            <div class="units"></div>
+            <div class="unit-level"></div>
+            <div class="unit"></div>
+            <div class="unit-item"></div>
             <div class="traits"></div>
           </div>
         </div>

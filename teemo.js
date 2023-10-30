@@ -11,14 +11,29 @@ const searchSummonerInput = document.getElementById('input-search-summoner');
 const searchSummonerButton = document.getElementById('button-search-summoner');
 
 let region = 'na1';
-let api_key = 'RGAPI-0a5d16cb-eb15-4831-ac0e-d1b96d15590f';
+let api_key = 'RGAPI-120b384e-c492-4641-acc3-2a42e561cfb6';
 
+let searched_puuid;
+let searched_summonerID;
+
+function delayedFunction(i) {
+  setTimeout(function () {
+    // Your code to be executed after waiting for 1 second
+    console.log('Code executed after waiting for ${i} second ');
+  }, 1000 * i);
+}
+
+function resetSearchStats() {
+  // Remove all child elements within the containers
+  summonerDTOContainer.innerHTML = '';
+  summonerMatchupsContainer.innerHTML = '';
+  summonerLegendsContainer.innerHTML = '';
+}
 async function searchSummoner(summonerName) {
+  resetSearchStats();
   await getSummonerDTO(summonerName);
-  const summonerID = document.querySelector('[summonerDTO-id]').innerHTML;
-  const puuid = document.querySelector('[summonerDTO-puuid]').innerHTML;
-  await getTFTLegneds(summonerID);
-  await getMatchIds(puuid);
+  await getTFTLegneds(searched_summonerID);
+  await getMatchIds(searched_puuid);
 }
 
 async function getDataSet(name) {
@@ -40,22 +55,13 @@ async function getSummonerDTO(summonerName) {
   console.log(summoner);
   console.log(summonerDTO);
 
-  const accountId = summoner.querySelector('[summonerDTO-accountId]');
   const profileIconId = summoner.querySelector('[summonerDTO-profileIconId]');
-  const revisionDate = summoner.querySelector('[summonerDTO-revisionDate]');
   const name = summoner.querySelector('[summonerDTO-name]');
-  const id = summoner.querySelector('[summonerDTO-id]');
-  const puuid = summoner.querySelector('[summonerDTO-puuid]');
-  const summonerLevel = summoner.querySelector('[summonerDTO-summonerLevel]');
 
-  accountId.textContent = summonerDTO.accountId;
-  profileIconId.textContent = summonerDTO.profileIconId;
-  revisionDate.textContent =
-    new Date(summonerDTO.revisionDate).toLocaleDateString('en-US') + ' ' + new Date(summonerDTO.revisionDate).toLocaleTimeString('en-US');
   name.textContent = summonerDTO.name;
-  id.textContent = summonerDTO.id;
-  puuid.textContent = summonerDTO.puuid;
-  summonerLevel.textContent = summonerDTO.summonerLevel;
+
+  searched_puuid = summonerDTO.puuid;
+  searched_summonerID = summonerDTO.id;
 
   summonerDTOContainer.append(summoner);
 
@@ -72,35 +78,25 @@ async function getTFTLegneds(summonerID) {
   legends.forEach((legend_data) => {
     const legend = summonerLegendTemplate.content.cloneNode(true).children[0];
 
-    const freshBlood = legend.querySelector('[legend-freshBlood]');
-    const hotStreak = legend.querySelector('[legend-hotStreak]');
-    const inactive = legend.querySelector('[legend-inactive]');
-    const leagueId = legend.querySelector('[legend-leagueId]');
+    if (legend_data.queueType != 'RANKED_TFT') {
+      return;
+    }
     const leaguePoints = legend.querySelector('[legend-leaguePoints]');
-    const losses = legend.querySelector('[legend-losses]');
-    const puuid = legend.querySelector('[legend-puuid]');
     const queueType = legend.querySelector('[legend-queueType]');
-    const rank = legend.querySelector('[legend-rank]');
-    const summonerId = legend.querySelector('[legend-summonerId]');
-    const summonerName = legend.querySelector('[legend-summonerName]');
     const tier = legend.querySelector('[legend-tier]');
-    const veteran = legend.querySelector('[legend-veteran]');
-    const wins = legend.querySelector('[legend-wins]');
+    const stats = legend.querySelector('[legend-stats]');
+    const winrate = legend.querySelector('[legend-winrate]');
 
-    freshBlood.textContent = legend_data.freshBlood;
-    hotStreak.textContent = legend_data.hotStreak;
-    inactive.textContent = legend_data.inactive;
-    leagueId.textContent = legend_data.leagueId;
-    leaguePoints.textContent = legend_data.leaguePoints;
-    losses.textContent = legend_data.losses;
-    puuid.textContent = legend_data.puuid;
-    queueType.textContent = legend_data.queueType;
-    rank.textContent = legend_data.rank;
-    summonerId.textContent = legend_data.summonerId;
-    summonerName.textContent = legend_data.summonerName;
-    tier.textContent = legend_data.tier;
-    veteran.textContent = legend_data.veteran;
-    wins.textContent = legend_data.wins;
+    leaguePoints.textContent = legend_data.leaguePoints + ' LP';
+
+    // RANKED_TFT_DOUBLE_UP
+    // RANKED_TFT
+
+    queueType.textContent = 'TFT Rank';
+    // rank.textContent = legend_data.rank;
+    tier.textContent = legend_data.tier + ' ' + legend_data.rank;
+    winrate.textContent = 'Win Rate ' + Math.round((legend_data.wins / (legend_data.wins + legend_data.losses)) * 100) + '%';
+    stats.textContent = legend_data.wins + 'W  ' + legend_data.losses + 'L';
 
     summonerLegendsContainer.append(legend);
 
@@ -115,7 +111,11 @@ async function getMatchIds(puuid) {
   let response = await fetch(api_url);
   let matchIds = await response.json();
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 20; i++) {
+    if (i == 10) {
+      delayedFunction(1);
+      console.log('wait for one 1 sec');
+    }
     await getMatchInfo(matchIds[i], puuid);
   }
 }
@@ -139,27 +139,31 @@ async function getMatchInfo(matchId, puuid) {
   const iconDiv = matchup.querySelector('.icon');
   const levelDiv = matchup.querySelector('.level');
   const gameInfoSectionDiv = matchup.querySelector('.game-info-section');
-  const queueTypeDiv = matchup.querySelector('.queue-type');
-  const gameLengthDiv = matchup.querySelector('.game-length');
+  const placement = matchup.querySelector('.placement');
+  const queueTypeGameLengthDiv = matchup.querySelector('.queue-type-game-length');
   const gameDateDiv = matchup.querySelector('.game-date');
   const ingameInfoSectionDiv = matchup.querySelector('.ingame-info-section');
   const augmentSectionDiv = matchup.querySelector('.augment-section');
   const unitsTraitsSectionDiv = matchup.querySelector('.units-traits-section');
-  const unitsDiv = matchup.querySelector('.units');
+  const unitDiv = matchup.querySelector('.unit');
   const traitsDiv = matchup.querySelector('.traits');
 
-  // queue-type
+  // queue-type and game length
   const queuesMap = await fetchData(getDataSet('Queues'));
   console.log(queuesMap);
   gameType = queuesMap['data'][matchInfo['info']['queue_id']]['name'];
 
-  queueTypeDiv.textContent = gameType == 'DOUBLE UP (WORKSHOP)' ? 'Double Up' : gameType;
-  //game-length
-  gameLengthDiv.textContent =
-    String(Math.floor(matchInfo['info']['game_length'] / 60)) + ':' + String(Math.floor(matchInfo['info']['game_length'] % 60));
+  // Convert seconds to minutes and seconds
+  const minutes = Math.floor(matchInfo['info']['game_length'] / 60);
+  const seconds = Math.round(matchInfo['info']['game_length'] % 60);
 
-  // game-date
-  gameDateDiv.textContent = new Date(matchInfo['info']['game_datetime']).toLocaleDateString('en-US');
+  queueTypeGameLengthDiv.textContent =
+    (gameType == 'DOUBLE UP (WORKSHOP)' ? 'Double Up' : gameType) + ' • ' + minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+
+  // Create the "minutes:seconds" formatted string
+  var formattedGameLength =
+    // game-date
+    (gameDateDiv.textContent = new Date(matchInfo['info']['game_datetime']).toLocaleDateString('en-US'));
 
   matchInfo['info']['participants'].forEach(async (participant) => {
     if (participant['puuid'] != puuid) {
@@ -179,6 +183,24 @@ async function getMatchInfo(matchId, puuid) {
     // level info
     levelDiv.textContent = participant['level'];
 
+    //placement
+
+    let placementTxt;
+    switch (participant['placement']) {
+      case 1:
+        placementTxt = '1ST PLACE';
+        break;
+      case 2:
+        placementTxt = '2ND PLACE';
+        break;
+      case 3:
+        placementTxt = '3RD PLACE';
+        break;
+      default:
+        placementTxt = participant['placement'] + 'TH PLACE';
+    }
+    placement.textContent = placementTxt;
+
     // augments
     const augmentsMap = await fetchData(getDataSet('Augments'));
     augments = participant['augments'];
@@ -194,14 +216,38 @@ async function getMatchInfo(matchId, puuid) {
     const championsMap = await fetchData(getDataSet('Champions'));
     units = participant['units'];
     console.log(units);
+
+    units = units.sort((a, b) => {
+      // First, sort by rarity in descending order (higher rarity comes first)
+      if (a.rarity < b.rarity) return 1;
+      if (a.rarity > b.rarity) return -1;
+
+      // If rarity is the same, sort by tier in ascending order
+      if (a.tier < b.tier) return -1;
+      if (a.tier > b.tier) return 1;
+
+      // If both rarity and tier are the same, leave the order as it is
+      return 0;
+    });
+
     units.forEach((unit) => {
+      if (unit['character_id'] == 'TFT9_THex') {
+        return;
+      }
       let unitImg = new Image();
+      console.log(unit['character_id']);
       console.log(championsMap['data'][unit['character_id']]['image']['full']);
-      console.log(championsMap['data'][unit['character_id']]['name'])
+      console.log(championsMap['data'][unit['character_id']]['name']);
       // unitImg.src = './public/dragontail-13.20.1/13.20.1/img/tft-champion/' + championsMap['data'][unit['character_id']]['image']['full'];
-      unitImg.src = './public/dragontail-13.20.1/13.20.1/img/champion/' + championsMap['data'][unit['character_id']]['name'].replace(/['\s]/g, '') + ".png";
-                    // public/dragontail-13.20.1/13.20.1/img/champion/Mordekaiser.png
-      unitsDiv.append(unitImg);
+      unitImg.src =
+        './public/dragontail-13.20.1/13.20.1/img/champion/' + championsMap['data'][unit['character_id']]['name'].replace(/['\s]/g, '') + '.png';
+      // public/dragontail-13.20.1/13.20.1/img/champion/Mordekaiser.png
+      unitDiv.append(unitImg);
+
+      //level
+      let unitLevelImg = new Image()
+
+      //items
     });
 
     // traits
@@ -223,7 +269,6 @@ async function getMatchInfo(matchId, puuid) {
       let traitImg = new Image();
       console.log(traitsMap['data'][trait['name']]['image']['full']);
       traitImg.src = './public/dragontail-13.20.1/13.20.1/img/tft-trait/' + traitsMap['data'][trait['name']]['image']['full'];
-      // public/dragontail-13.20.1/13.20.1/img/tft-trait/Trait_Icon_9_Darkin.TFT_Set9.png
 
       switch (trait['style']) {
         case 0:
@@ -260,4 +305,4 @@ function buttonSearchSummoner(e) {
 }
 
 searchSummonerInput.addEventListener('keypress', inputSearchSummoner);
-searchSummonerInput.addEventListener('click', buttonSearchSummoner);
+searchSummonerButton.addEventListener('click', buttonSearchSummoner);
