@@ -218,24 +218,59 @@ input {
 
 }
 
-.unit {
-    margin-top: 12px;
+.units-container {
     display: flex;
-    gap: 1px
+    gap: 1.5px;
 }
 
-/* .unit-level{
+.unit {
     display: flex;
-} */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1px;
+}
 
-.unit img {
+.unit-level {
+    height: 12px;
+    width: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.unit-level img {
+    height: 12px;
+    width: 12px;
+    justify-content: center;
+}
+
+.unit-icon {
     display: flex;
 
-    height: 40px;
-    width: 40px;
+}
+
+.unit-icon img {
+    display: flex;
+
+    height: 50px;
+    width: 50px;
 
     border-radius: 4px;
     border: 1px solid black;
+}
+
+
+.unit-item {
+    display: flex;
+    height: 16px;
+    width: 48px;
+    gap: 1px;
+}
+
+.unit-item img {
+    height: 16px;
+    width: 16px;
 }
 
 .traits {

@@ -10,6 +10,9 @@ const summonerMatchupsContainer = document.querySelector('[search-matches-contai
 const searchSummonerInput = document.getElementById('input-search-summoner');
 const searchSummonerButton = document.getElementById('button-search-summoner');
 
+const matchUnitTemplate = document.querySelector('[match-unit-template]');
+const matchUnitContainer = document.querySelector('[units-container]');
+
 let region = 'na1';
 let api_key = 'RGAPI-120b384e-c492-4641-acc3-2a42e561cfb6';
 
@@ -19,7 +22,7 @@ let searched_summonerID;
 function delayedFunction(i) {
   setTimeout(function () {
     // Your code to be executed after waiting for 1 second
-    console.log('Code executed after waiting for ${i} second ');
+    console.log(`Code executed after waiting for ${i} second `);
   }, 1000 * i);
 }
 
@@ -133,6 +136,7 @@ async function getMatchInfo(matchId, puuid) {
   let game_datetime = matchInfo['info']['game_datetime'];
   let game_length = matchInfo['info']['game_length'];
 
+  // match up template
   const matchup = summonerMatchupTemplate.content.cloneNode(true).children[0];
 
   const iconSectionDiv = matchup.querySelector('.icon-section');
@@ -145,8 +149,9 @@ async function getMatchInfo(matchId, puuid) {
   const ingameInfoSectionDiv = matchup.querySelector('.ingame-info-section');
   const augmentSectionDiv = matchup.querySelector('.augment-section');
   const unitsTraitsSectionDiv = matchup.querySelector('.units-traits-section');
-  const unitDiv = matchup.querySelector('.unit');
+
   const traitsDiv = matchup.querySelector('.traits');
+  const unitContainerDiv = matchup.querySelector('.units-container');
 
   // queue-type and game length
   const queuesMap = await fetchData(getDataSet('Queues'));
@@ -218,19 +223,25 @@ async function getMatchInfo(matchId, puuid) {
     console.log(units);
 
     units = units.sort((a, b) => {
-      // First, sort by rarity in descending order (higher rarity comes first)
+      // First, sort by tier in descending order (higher tier comes first)
+      if (a.tier < b.tier) return 1;
+      if (a.tier > b.tier) return -1;
+
+      // If rarity is the same, sort by rarity in ascending order
       if (a.rarity < b.rarity) return 1;
       if (a.rarity > b.rarity) return -1;
-
-      // If rarity is the same, sort by tier in ascending order
-      if (a.tier < b.tier) return -1;
-      if (a.tier > b.tier) return 1;
 
       // If both rarity and tier are the same, leave the order as it is
       return 0;
     });
 
     units.forEach((unit) => {
+      // unit template
+      const unitTemplate = matchUnitTemplate.content.cloneNode(true).children[0];
+
+      const unitLevelDiv = unitTemplate.querySelector('.unit-level');
+      const unitIconDiv = unitTemplate.querySelector('.unit-icon');
+      const unitItemDiv = unitTemplate.querySelector('.unit-item');
       if (unit['character_id'] == 'TFT9_THex') {
         return;
       }
@@ -242,12 +253,26 @@ async function getMatchInfo(matchId, puuid) {
       unitImg.src =
         './public/dragontail-13.20.1/13.20.1/img/champion/' + championsMap['data'][unit['character_id']]['name'].replace(/['\s]/g, '') + '.png';
       // public/dragontail-13.20.1/13.20.1/img/champion/Mordekaiser.png
-      unitDiv.append(unitImg);
+      unitIconDiv.append(unitImg);
 
-      //level
-      let unitLevelImg = new Image()
+      //unit star level
+      if (unit['tier'] != '1') {
+        for (let i = 0; i < unit['tier']; i++) {
+          let unitLevelImg = new Image();
+          console.log(`./public/unit_star_level/${unit['tier']}_star.png`);
+          unitLevelImg.src = `./public/unit_star_level/${unit['tier']}_star.png`;
+          unitLevelDiv.append(unitLevelImg);
+        }
+      }
 
       //items
+      unit['itemNames'].forEach((item) => {
+        let unitItem = new Image();
+        unitItem.src = `public/dragontail-13.20.1/13.20.1/img/tft-item/${item}.png`;
+        unitItemDiv.append(unitItem);
+      });
+
+      unitContainerDiv.append(unitTemplate);
     });
 
     // traits
