@@ -9,6 +9,7 @@
     <link type="text/css" rel="stylesheet" href="profileIcon.css" />
 
     <script src="teemo.js" defer></script>
+    <script type="text/javascript" src="config.js"></script>
   </head>
 
   <body>
@@ -21,7 +22,9 @@
     </div>
 
     <div class="search-summonerDTO-container" search-summonerDTO-container></div>
+    <p>Summoner Info</p>
     <div class="search-legends-container" search-legends-container></div>
+    <p>Match History</p>
     <div class="search-matchups-container" search-matches-container></div>
 
     <template summoner-summonerDTO-template>
@@ -33,12 +36,16 @@
 
     <template summoner-legend-template>
       <div class="legend">
+        <div class="queueType" legend-queueType></div>
+
+        <div class="tier-icon"></div>
         <div class="tier-section">
-          <div class="tier" legend-tier></div>
-          <div class="leaguePoints" legend-leaguePoints></div>
+          <div class="tier" legend-tier>
+            <span id="rank-tier"></span>
+            <span id="league-point"></span>
+          </div>
         </div>
 
-        <div class="queueType" legend-queueType></div>
         <div class="stats" legend-stats></div>
         <div class="winrate" legend-winrate></div>
       </div>

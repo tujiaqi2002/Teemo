@@ -13,8 +13,8 @@ const searchSummonerButton = document.getElementById('button-search-summoner');
 const matchUnitTemplate = document.querySelector('[match-unit-template]');
 const matchUnitContainer = document.querySelector('[units-container]');
 
+var api_key = config.api_key;
 let region = 'na1';
-let api_key = 'RGAPI-120b384e-c492-4641-acc3-2a42e561cfb6';
 
 let searched_puuid;
 let searched_summonerID;
@@ -81,31 +81,35 @@ async function getTFTLegneds(summonerID) {
   legends.forEach((legend_data) => {
     const legend = summonerLegendTemplate.content.cloneNode(true).children[0];
 
-    if (legend_data.queueType != 'RANKED_TFT') {
-      return;
-    }
-    const leaguePoints = legend.querySelector('[legend-leaguePoints]');
     const queueType = legend.querySelector('[legend-queueType]');
-    const tier = legend.querySelector('[legend-tier]');
+    const tierIconDiv = legend.querySelector('.tier-icon');
+    const leaguePoints = legend.querySelector('#league-point');
+    const rankTier = legend.querySelector('#rank-tier');
     const stats = legend.querySelector('[legend-stats]');
     const winrate = legend.querySelector('[legend-winrate]');
 
-    leaguePoints.textContent = legend_data.leaguePoints + ' LP';
+    console.log(legend_data['leaguePoints']);
+    console.log(leaguePoints);
 
-    // RANKED_TFT_DOUBLE_UP
-    // RANKED_TFT
+    switch (legend_data['queueType']) {
+      case 'RANKED_TFT':
+        queueType.textContent = 'TFT Rank';
+        break;
+      case 'RANKED_TFT_DOUBLE_UP':
+        queueType.textContent = 'Double Up';
+        break;
+    }
 
-    queueType.textContent = 'TFT Rank';
-    // rank.textContent = legend_data.rank;
-    tier.textContent = legend_data.tier + ' ' + legend_data.rank;
+  
     winrate.textContent = 'Win Rate ' + Math.round((legend_data.wins / (legend_data.wins + legend_data.losses)) * 100) + '%';
     stats.textContent = legend_data.wins + 'W  ' + legend_data.losses + 'L';
-
+    leaguePoints.textContent = `${legend_data['leaguePoints']} LP`;
+    rankTier.textContent = `${legend_data.tier} ${legend_data.rank}`
     summonerLegendsContainer.append(legend);
 
     let tierImg = new Image();
     tierImg.src = './public/dragontail-13.20.1/13.20.1/img/tft-regalia/TFT_Regalia_' + legend_data.tier + '.png';
-    tier.appendChild(tierImg);
+    tierIconDiv.appendChild(tierImg);
   });
 }
 

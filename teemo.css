@@ -13,6 +13,10 @@
     src: url('./public/Fonts_Package/Spiegel-TTF/Spiegel_TT_Regular.ttf') format('woff2');
 }
 
+@font-face {
+    font-family: 'Spiegel-Semi-Bold';
+    src: url('./public/Fonts_Package/Spiegel-TTF/Spiegel_TT_SemiBold.ttf') format('woff2');
+}
 
 
 body {
@@ -86,33 +90,70 @@ input {
 }
 
 .search-legends-container {
-    display: grid;
+    display: flex;
     gap: .25rem;
     margin: 1rem;
     border: 1px solid black;
+
 }
 
 .legend {
     border: 1px solid black;
     background-color: white;
     padding: .5rem;
+    font-family: 'Spiegel-regular';
+    font-size: 12px;
+
 }
 
-.legend * {
-    border: 0.5px solid black;
-    margin-bottom: .25rem;
-    font-size: .8rem;
+.queueType {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'BeaufortForLoL-Bold';
+    font-size: 15px;
+
+
+}
+
+
+
+.tier-icon img {
+    width: 128px;
+    height: 128px;
 }
 
 .tier {
     display: flex;
-    flex-direction: column;
+    gap: 5px;
+ 
+    align-items: center;
 }
 
-.tier img {
-    width: 128px;
-    height: 128px;
+
+#rank-tier {
+    font-size: 12px;
+    font-weight: bolder;
 }
+
+#league-point {
+    font-size: 9px;
+    font-weight: lighter;
+    color: #9AA4AF;
+}
+
+.stats {
+    font-size: 10px;
+    color: #9AA4AF;
+}
+
+.winrate {
+    font-size: 10px;
+    color: #9AA4AF;
+}
+
+
+
 
 
 /* Match up seciton */
@@ -161,7 +202,7 @@ input {
     border-radius: 8px;
     font-size: 10px;
     position: relative;
-    right: 25%;
+    right: 20%;
     bottom: -21%;
 }
 
@@ -228,7 +269,6 @@ input {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 1px;
 }
 
 .unit-level {
@@ -237,6 +277,7 @@ input {
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-bottom: 0.5px;
 }
 
 .unit-level img {
@@ -251,17 +292,18 @@ input {
 }
 
 .unit-icon img {
-    display: flex;
-
     height: 50px;
     width: 50px;
-
     border-radius: 4px;
     border: 1px solid black;
 }
 
 
 .unit-item {
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    margin-top: 1px;
     display: flex;
     height: 16px;
     width: 48px;
