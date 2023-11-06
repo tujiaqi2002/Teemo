@@ -13,7 +13,8 @@ const searchSummonerButton = document.getElementById('button-search-summoner');
 const matchUnitTemplate = document.querySelector('[match-unit-template]');
 const matchUnitContainer = document.querySelector('[units-container]');
 
-var api_key = config.api_key;
+const api_key = process.env.api_key;
+
 let region = 'na1';
 
 let searched_puuid;
